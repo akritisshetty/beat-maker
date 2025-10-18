@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Pad - Beat Maker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8f5e9 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .pad-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .pad {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .pad::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pad:hover::before {
+            opacity: 1;
+        }
+
+        .pad:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .pad:active, .pad.active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .pad.active::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            to {
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* Color schemes for different pads */
+        .pad-1 { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); color: white; }
+        .pad-2 { background: linear-gradient(135deg, #f06595, #e64980); color: white; }
+        .pad-3 { background: linear-gradient(135deg, #cc5de8, #be4bdb); color: white; }
+        .pad-4 { background: linear-gradient(135deg, #845ef7, #7950f2); color: white; }
+        .pad-5 { background: linear-gradient(135deg, #5c7cfa, #4c6ef5); color: white; }
+        .pad-6 { background: linear-gradient(135deg, #339af0, #228be6); color: white; }
+        .pad-7 { background: linear-gradient(135deg, #22b8cf, #15aabf); color: white; }
+        .pad-8 { background: linear-gradient(135deg, #20c997, #12b886); color: white; }
+        .pad-9 { background: linear-gradient(135deg, #51cf66, #40c057); color: white; }
+        .pad-10 { background: linear-gradient(135deg, #94d82d, #82c91e); color: white; }
+        .pad-11 { background: linear-gradient(135deg, #ffd43b, #fcc419); color: #333; }
+        .pad-12 { background: linear-gradient(135deg, #ff922b, #fd7e14); color: white; }
+        .pad-13 { background: linear-gradient(135deg, #ff8787, #ff6b6b); color: white; }
+        .pad-14 { background: linear-gradient(135deg, #a9e34b, #94d82d); color: #333; }
+        .pad-15 { background: linear-gradient(135deg, #4dabf7, #339af0); color: white; }
+        .pad-16 { background: linear-gradient(135deg, #da77f2, #cc5de8); color: white; }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #51cf66, #40c057);
+            color: white;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(64, 192, 87, 0.4);
+        }
+
+        .info {
+            margin-top: 20px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .pad-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Beat Maker</h1>
+        <p class="subtitle">Click pads to create your groove</p>
+        
+        <div class="pad-grid">
+            <button class="pad pad-1" data-note="C4"></button>
+            <button class="pad pad-2" data-note="D4"></button>
+            <button class="pad pad-3" data-note="E4"></button>
+            <button class="pad pad-4" data-note="F4"></button>
+            <button class="pad pad-5" data-note="G4"></button>
+            <button class="pad pad-6" data-note="A4"></button>
+            <button class="pad pad-7" data-note="B4"></button>
+            <button class="pad pad-8" data-note="C5"></button>
+            <button class="pad pad-9" data-note="D5"></button>
+            <button class="pad pad-10" data-note="E5"></button>
+            <button class="pad pad-11" data-note="F5"></button>
+            <button class="pad pad-12" data-note="G5"></button>
+            <button class="pad pad-13" data-note="A5"></button>
+            <button class="pad pad-14" data-note="B5"></button>
+            <button class="pad pad-15" data-note="C6"></button>
+            <button class="pad pad-16" data-note="D6"></button>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn start-btn" id="startBtn">Start Audio</button>
+        </div>
+
+        <p class="info">Click "Start Audio" first, then tap any pad to play sounds</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script>
+        let audioStarted = false;
+        const startBtn = document.getElementById('startBtn');
+
+        // Create synths for different sound types
+        const kickSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.05,
+            octaves: 4,
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        const snareSynth = new Tone.NoiseSynth({
+            noise: { type: 'white' },
+            envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
+        }).toDestination();
+
+        const hihatSynth = new Tone.MetalSynth({
+            frequency: 200,
+            envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
+            harmonicity: 5.1,
+            modulationIndex: 32,
+            resonance: 4000,
+            octaves: 1.5
+        }).toDestination();
+
+        const clapSynth = new Tone.NoiseSynth({
+            noise: { type: 'pink' },
+            envelope: { attack: 0.001, decay: 0.15, sustain: 0 }
+        }).toDestination();
+
+        const tomSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.08,
+            octaves: 4,
+            envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        const bassSynth = new Tone.MonoSynth({
+            oscillator: { type: 'sawtooth' },
+            envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.1 },
+            filterEnvelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        const leadSynth = new Tone.Synth({
+            oscillator: { type: 'square' },
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        const synthSynth = new Tone.PolySynth(Tone.Synth, {
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        const fxSynth = new Tone.FMSynth({
+            harmonicity: 8,
+            modulationIndex: 2,
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0.01, decay: 0.15, sustain: 0, release: 0.1 }
+        }).toDestination();
+
+        // Start audio context
+        startBtn.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                audioStarted = true;
+                startBtn.textContent = 'Audio Ready ✓';
+                startBtn.style.background = 'linear-gradient(135deg, #4ecdc4, #3ab8af)';
+            }
+        });
+
+        // Add click handlers to all pads
+        document.querySelectorAll('.pad').forEach((pad, index) => {
+            pad.addEventListener('click', () => {
+                if (!audioStarted) {
+                    alert('Please click "Start Audio" first!');
+                    return;
+                }
+
+                // Visual feedback
+                pad.classList.add('active');
+                setTimeout(() => pad.classList.remove('active'), 200);
+
+                const note = pad.dataset.note;
+                const now = Tone.now();
+
+                // Play different sounds based on pad index
+                switch(index) {
+                    case 0: // Kick
+                        kickSynth.triggerAttackRelease('C1', '8n', now);
+                        break;
+                    case 1: // Snare
+                        snareSynth.triggerAttackRelease('8n', now);
+                        break;
+                    case 2: // Hi-Hat
+                        hihatSynth.triggerAttackRelease('16n', now);
+                        break;
+                    case 3: // Clap
+                        clapSynth.triggerAttackRelease('8n', now);
+                        break;
+                    case 4: // Tom 1
+                        tomSynth.triggerAttackRelease('G2', '8n', now);
+                        break;
+                    case 5: // Tom 2
+                        tomSynth.triggerAttackRelease('E2', '8n', now);
+                        break;
+                    case 6: // Tom 3
+                        tomSynth.triggerAttackRelease('C2', '8n', now);
+                        break;
+                    case 7: // Crash
+                        hihatSynth.triggerAttackRelease('4n', now);
+                        break;
+                    case 8: // Bass 1
+                        bassSynth.triggerAttackRelease('C2', '8n', now);
+                        break;
+                    case 9: // Bass 2
+                        bassSynth.triggerAttackRelease('G2', '8n', now);
+                        break;
+                    case 10: // Lead 1
+                        leadSynth.triggerAttackRelease('C4', '8n', now);
+                        break;
+                    case 11: // Lead 2
+                        leadSynth.triggerAttackRelease('E4', '8n', now);
+                        break;
+                    case 12: // Synth 1
+                        synthSynth.triggerAttackRelease('G4', '16n', now);
+                        break;
+                    case 13: // Synth 2
+                        synthSynth.triggerAttackRelease('B4', '16n', now);
+                        break;
+                    case 14: // FX 1
+                        fxSynth.triggerAttackRelease('C5', '4n', now);
+                        break;
+                    case 15: // FX 2
+                        fxSynth.triggerAttackRelease('E5', '4n', now);
+                        break;
+                }
+            });
+
+            // Add keyboard support
+            pad.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    pad.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
